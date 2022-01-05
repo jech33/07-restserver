@@ -21,7 +21,7 @@ const usuariosGet = async (req = request, res = response) => {
             .limit(limite)
     ]).catch((err) => {
         console.log(err);
-        return
+        return err
     })
 
     res.json({
@@ -75,17 +75,21 @@ const usuariosPatch = (req = request, res = response) => {
 }
 
 const usuariosDelete = async (req = request, res = response) => {
+
     const { id } = req.params;
+
+    const uid = req.uid;
 
     // Fisicamente lo borramos
     // const usuario = await Usuario.findByIdAndDelete(id);
 
     const usuario = await Usuario.findByIdAndUpdate(id, { estado: false })
+    const usuarioAutenticado = req.usuarioAutenticado;
 
 
     res.json({
-        msg: "Usuario eliminado",
-        id
+        usuario,
+        usuarioAutenticado,
     })
 }
 
