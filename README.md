@@ -1,7 +1,8 @@
 # WebServer + RestServer
 
 Reminder! Execute ```npm install``` to install dependencies and node modules.
-Now hosted on heoku! -> https://rest-server-node-0-experto.herokuapp.com/api/usuarios
+
+Now hosted on heroku! -> https://rest-server-node-0-experto.herokuapp.com/api/usuarios
 <br/><br/>
 
 # Dev notes
