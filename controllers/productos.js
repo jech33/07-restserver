@@ -1,5 +1,5 @@
 const { response } = require("express");
-const { Categoria, Producto } = require('../models');
+const { Producto } = require('../models');
 
 
 
@@ -7,10 +7,9 @@ const { Categoria, Producto } = require('../models');
 const crearProducto = async (req, res = response) => {
 
     const nombre = req.body.nombre.toUpperCase();
+    const { categoria } = req.body;
 
     const productoDB = await Producto.findOne({ nombre });
-
-    // Validar que la categoria exista
 
     if (productoDB) {
         return res.status(400).json({
@@ -21,7 +20,7 @@ const crearProducto = async (req, res = response) => {
     // Generar la data a guardar
     const data = {
         nombre,
-        categoria: req.body.categoria,
+        categoria,
         usuario: req.usuarioAutenticado._id
     }
 
@@ -30,7 +29,16 @@ const crearProducto = async (req, res = response) => {
     // Guardar en DB
     await producto.save();
 
-    res.status(201).json(producto);
+    const productoJSON = await Producto.findById(producto._id)
+        .populate('categoria', 'nombre')
+        .populate('usuario', {
+            correo: 1
+        })
+
+    res.status(201).json({
+        msg: 'Producto creado correctamente',
+        producto: productoJSON
+    });
 
 }
 
@@ -40,66 +48,66 @@ const obtenerProductos = async (req, res = response) => {
     const { limite = 5, desde = 0 } = req.query;
     const query = { estado: true };
 
-    const [total, categorias] = await Promise.all([
-        Categoria.countDocuments(query),
-        Categoria.find(query)
+    const [total, productos] = await Promise.all([
+        Producto.countDocuments(query),
+        Producto.find(query)
             .skip(desde)
             .limit(limite)
-            .populate('usuario')
+            .populate('categoria', 'nombre')
+            .populate('usuario', {
+                correo: 1
+            })
     ]).catch((err) => {
         console.log(err);
         return err
     })
 
-    categorias.forEach(categoria => {
-        const {__v, password, ...usuario} = categoria.usuario._doc;
-        categoria.usuario = {...usuario}
-        console.log({...usuario})
-    });
-
     res.json({
         total,
-        categorias
+        productos
     });
 }
 
 const obtenerProducto = async (req, res = response) => {
     const id = req.params.id;
 
-    const categoria = await Categoria.findById(id);
+    const producto = await Producto.findById(id)
+        .populate('categoria', 'nombre')
+        .populate('usuario', 'correo');
 
-    res.json(categoria)
+    res.json(producto)
 }
 
 const actualizarProducto = async (req, res = response) => {
 
     const id = req.params.id;
-    const nombre = req.body.nombre.toUpperCase();    
-    
-    await Categoria.findByIdAndUpdate(id, {nombre});
-    const categoria = await Categoria.findById(id);
-    
+    const nombre = req.body.nombre.toUpperCase();
+    const { precio, disponible } = req.body
+
+    await Producto.findByIdAndUpdate(id, { nombre, precio, disponible });
+    const producto = await Producto.findById(id);
+
     res.json({
         "msg": "put API - controlador",
-        categoria
+        producto
     })
 
 }
 
-const eliminarProducto =  async (req, res = response) => {
+const eliminarProducto = async (req, res = response) => {
     const { id } = req.params;
 
     // Fisicamente lo borramos
     // const usuario = await Usuario.findByIdAndDelete(id);
 
-    await Categoria.findByIdAndUpdate(id, { estado: false })
-    const categoria = await Categoria.findById(id);
+    await Producto.findByIdAndUpdate(id, { estado: false, disponible: false })
+    const producto = await Producto.findById(id);
     const usuarioAutenticado = req.usuarioAutenticado;
 
 
     res.json({
-        msg: `La categoria ${categoria.nombre} con id: ${categoria._id} ha sido eliminada`,
-        categoria,
+        msg: `El producto ${producto.nombre} con id: ${producto._id} ha sido eliminado`,
+        producto,
         usuarioAutenticado,
     })
 }
