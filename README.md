@@ -5,6 +5,12 @@ Reminder! Execute ```npm install``` to install dependencies and node modules.
 Now hosted on heroku! -> https://rest-server-node-0-experto.herokuapp.com/api/usuarios
 <br/><br/>
 
+### Edit 
+API has been taken down to host Sockets Chat App (module 10). 
+<br/>
+It also includes google Login! check it out at -> https://rest-server-socket-chat.herokuapp.com/
+<br/><br/>
+
 # Dev notes
 
 This backend project uses nodeJS to run an API Rest server, containing all the info in a mongo database with different collections.
